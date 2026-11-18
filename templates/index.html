@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetDiag | Network Diagnostic Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+
+        <header>
+            <div class="logo">
+                <span class="logo-icon">⌁</span>
+                <h2>NetDiag<span>.</span></h2>
+            </div>
+            <span class="status">● Sistema pronto</span>
+        </header>
+
+        <main>
+            <section class="welcome">
+                <p class="eyebrow">NETWORK DIAGNOSTICS</p>
+                <h1>Diagnóstico de rede<span>.</span></h1>
+                <p class="description">
+                    Analise a conectividade, consulte endereços IP
+                    e verifique a latência de qualquer domínio.
+                </p>
+            </section>
+
+            <section class="search-card">
+                <label for="domain">DOMÍNIO OU ENDEREÇO IP</label>
+
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="domain"
+                        placeholder="Ex: google.com"
+                    >
+                    <button id="test-button">Iniciar diagnóstico →</button>
+                </div>
+            </section>
+
+            <section class="results">
+                <div class="result-card">
+                    <span class="result-label">ENDEREÇO IP</span>
+                    <h2 id="ip">--</h2>
+                    <p>Resolução DNS</p>
+                </div>
+
+                <div class="result-card">
+                    <span class="result-label">LATÊNCIA MÉDIA</span>
+                    <h2 id="latency">--</h2>
+                    <p>Tempo de resposta</p>
+                </div>
+
+                <div class="result-card">
+                    <span class="result-label">CONECTIVIDADE</span>
+                    <h2 id="connection">--</h2>
+                    <p>Status do servidor</p>
+                </div>
+            </section>
+
+            <section class="activity-card">
+                <h3>Resultado do diagnóstico</h3>
+                <div id="output">
+                    Aguardando início do diagnóstico...
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>NetDiag © 2026 | Network Diagnostic Tool</p>
+            <p>Desenvolvido com Python</p>
+        </footer>
+
+    </div>
+
+<script>
+document.getElementById("test-button").addEventListener("click", async function() {
+
+    const dominio = document.getElementById("domain").value.trim();
+    const output = document.getElementById("output");
+
+    if (!dominio) {
+        output.textContent = "Digite um domínio para iniciar o teste.";
+        return;
+    }
+
+    output.textContent = "Executando diagnóstico...";
+
+    try {
+        const resposta = await fetch("/diagnosticar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ dominio: dominio })
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            output.textContent = dados.erro;
+            return;
+        }
+
+        document.getElementById("ip").textContent = dados.ip;
+        document.getElementById("latency").textContent =
+            dados.latencia !== null ? dados.latencia + " ms" : "Indisponível";
+
+        document.getElementById("connection").textContent = dados.conectividade;
+
+        output.textContent = dados.resultado;
+
+    } catch (erro) {
+        output.textContent = "Erro ao conectar com o servidor.";
+    }
+
+});
+</script>
+</body>
+</html>
